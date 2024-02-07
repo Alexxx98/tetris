@@ -17,6 +17,9 @@ class Node:
     def get_pos(self):
         return (self.row, self.col)
 
+    def turn_right(self):
+        self.row -= 1
+
     def make_frame(self):
         self.color = GREY
 

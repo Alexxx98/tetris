@@ -3,19 +3,15 @@ from settings import (
     WIDTH,
     HEIGHT,
     FPS,
-    RED,
     BLACK,
     DARK_BLUE,
-    WHITE,
     NODE_HEIGHT,
     NODE_WIDTH,
     NUM_OF_ROWS,
     NUM_OF_COLS,
 )
 from models import Node
-from utils import fall, check_end
-
-import random
+from utils import fall, check_end, create_shape
 
 
 pygame.init()
@@ -28,24 +24,38 @@ clock = pygame.time.Clock()
 
 # Add block falling event
 block_falling = pygame.USEREVENT + 0
-pygame.time.set_timer(block_falling, 500)
-
-# Add create new blocks event
-create_blocks = pygame.USEREVENT + 1
-pygame.time.set_timer(create_blocks, 3000)
+pygame.time.set_timer(block_falling, 1000)
 
 
 def main():
     running = True
     nodes = get_game_grid()
+    moved = False
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == create_blocks:
-                create_shape(nodes)
             if event.type == block_falling:
-                fall(nodes)
+                pos1, pos2 = current_block.get_pos()
+                moved = fall(current_block, nodes)
+                current_block = nodes[pos1][pos2 + 1]
+            if event.type == pygame.KEYDOWN:
+                pos1, pos2 = current_block.get_pos()
+                if event.key == pygame.K_LEFT:
+                    next_block = nodes[pos1 - 1][pos2]
+                    if not next_block.is_frame() and not next_block.is_block():
+                        current_block.make_empty()
+                        current_block = next_block
+                        current_block.make_block()
+                if event.key == pygame.K_RIGHT:
+                    next_block = nodes[pos1 + 1][pos2]
+                    if not next_block.is_frame() and not next_block.is_block():
+                        current_block.make_empty()
+                        current_block = next_block
+                        current_block.make_block()
+        if not moved:
+            current_block = create_shape(nodes)
+            moved = True
 
         if check_end(nodes):
             running = False
@@ -90,18 +100,6 @@ def draw_game_grid(nodes: list) -> None:
             pygame.draw.rect(
                 WINDOW, BLACK, pygame.Rect(node.x, node.y, node.width, node.height), 1
             )
-
-
-def create_shape(nodes):
-    starting_nodes = [
-        node
-        for row in nodes
-        for node in row
-        if nodes.index(row) in range(1, NUM_OF_ROWS - 1) and row.index(node) == 1
-    ]
-
-    for node in starting_nodes:
-        node.make_block()
 
 
 if __name__ == "__main__":

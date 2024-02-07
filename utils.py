@@ -1,12 +1,30 @@
-def fall(nodes: list) -> None:
-    blocks = [node for row in nodes for node in row if node.is_block()]
+from settings import NUM_OF_ROWS
+from models import Node
 
-    for node in blocks:
-        node_pos = node.get_pos()
-        next_node = nodes[node_pos[0]][node_pos[1] + 1]
-        if not next_node.is_block() and not next_node.is_frame():
-            node.make_empty()
-            next_node.make_block()
+import random
+
+
+def create_shape(nodes: list) -> Node:
+    starting_nodes: list = [
+        node
+        for row in nodes
+        for node in row
+        if nodes.index(row) in range(1, NUM_OF_ROWS - 1) and row.index(node) == 1
+    ]
+
+    starting_block = starting_nodes[random.randint(1, NUM_OF_ROWS - 2)]
+    starting_block.make_block()
+    return starting_block
+
+
+def fall(node: Node, nodes: list) -> bool:
+    pos1, pos2 = node.get_pos()
+    next_node = nodes[pos1][pos2 + 1]
+    if not next_node.is_block() and not next_node.is_frame():
+        node.make_empty()
+        next_node.make_block()
+        return True
+    return False
 
 
 def check_end(nodes: list) -> None:
