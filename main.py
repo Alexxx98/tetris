@@ -16,7 +16,6 @@ from utils import (
     create_shape,
     get_rows,
     check_lines,
-    get_active_node,
     is_movable,
 )
 
@@ -30,7 +29,7 @@ clock = pygame.time.Clock()
 # Create new user events
 # Add block falling event
 block_falling = pygame.USEREVENT + 0
-pygame.time.set_timer(block_falling, 100)
+pygame.time.set_timer(block_falling, 200)
 
 
 def main():
@@ -43,57 +42,52 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == block_falling:
-                pos1, pos2 = active_node.get_pos()
-                if moving and nodes[pos1][pos2 + 1].is_empty():
+                bottom_nodes = current_shape.get_bottom_blocks()
+                if moving and is_movable(bottom_nodes, nodes, "down"):
                     new_shape = []
-                    for node in current_shape:
+                    for node in current_shape.get_blocks():
                         pos1, pos2 = node.get_pos()
                         next_node = nodes[pos1][pos2 + 1]
                         node.make_empty()
                         new_shape.append(next_node)
-                    for node in new_shape:
+                    for index, node in enumerate(new_shape):
                         node.make_block()
-                    current_shape = new_shape
-
-                    active_node = get_active_node(current_shape)
+                        current_shape.update_block(index, node)
                 else:
                     moving = False
 
             if event.type == pygame.KEYDOWN:
+                left_blocks = current_shape.get_left_blocks()
+                right_blocks = current_shape.get_right_blocks()
                 if event.key == pygame.K_LEFT and is_movable(
-                    current_shape, nodes, "left"
+                    left_blocks, nodes, "left"
                 ):
                     new_shape = []
-                    for node in current_shape:
+                    for node in current_shape.get_blocks():
                         pos1, pos2 = node.get_pos()
                         next_node = nodes[pos1 - 1][pos2]
                         node.make_empty()
                         new_shape.append(next_node)
-                    for node in new_shape:
+                    for index, node in enumerate(new_shape):
                         node.make_block()
-                    current_shape = new_shape
-
-                    active_node = get_active_node(current_shape)
+                        current_shape.update_block(index, node)
 
                 if event.key == pygame.K_RIGHT and is_movable(
-                    current_shape, nodes, "right"
+                    right_blocks, nodes, "right"
                 ):
                     new_shape = []
-                    for node in current_shape:
+                    for node in current_shape.get_blocks():
                         pos1, pos2 = node.get_pos()
                         next_node = nodes[pos1 + 1][pos2]
                         node.make_empty()
                         new_shape.append(next_node)
-                    for node in new_shape:
+                    for index, node in enumerate(new_shape):
                         node.make_block()
-                    current_shape = new_shape
-
-                    active_node = get_active_node(current_shape)
+                        current_shape.update_block(index, node)
 
         if not moving:
             check_lines(rows)
             current_shape = create_shape(nodes)
-            active_node = get_active_node(current_shape)
             moving = True
 
         if check_end(nodes):
