@@ -7,11 +7,18 @@ from settings import (
     DARK_BLUE,
     NODE_HEIGHT,
     NODE_WIDTH,
-    NUM_OF_ROWS,
-    NUM_OF_COLS,
+    ROW_INDECIES,
+    COL_INDECIES,
 )
 from models import Node
-from utils import fall, check_end, create_shape
+from utils import (
+    check_end,
+    create_shape,
+    get_rows,
+    check_lines,
+    get_active_node,
+    is_movable,
+)
 
 
 pygame.init()
@@ -21,41 +28,73 @@ WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
 # Create new user events
-
 # Add block falling event
 block_falling = pygame.USEREVENT + 0
-pygame.time.set_timer(block_falling, 1000)
+pygame.time.set_timer(block_falling, 100)
 
 
 def main():
     running = True
     nodes = get_game_grid()
-    moved = False
+    rows = get_rows(nodes)
+    moving = False
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == block_falling:
-                pos1, pos2 = current_block.get_pos()
-                moved = fall(current_block, nodes)
-                current_block = nodes[pos1][pos2 + 1]
+                pos1, pos2 = active_node.get_pos()
+                if moving and nodes[pos1][pos2 + 1].is_empty():
+                    new_shape = []
+                    for node in current_shape:
+                        pos1, pos2 = node.get_pos()
+                        next_node = nodes[pos1][pos2 + 1]
+                        node.make_empty()
+                        new_shape.append(next_node)
+                    for node in new_shape:
+                        node.make_block()
+                    current_shape = new_shape
+
+                    active_node = get_active_node(current_shape)
+                else:
+                    moving = False
+
             if event.type == pygame.KEYDOWN:
-                pos1, pos2 = current_block.get_pos()
-                if event.key == pygame.K_LEFT:
-                    next_block = nodes[pos1 - 1][pos2]
-                    if not next_block.is_frame() and not next_block.is_block():
-                        current_block.make_empty()
-                        current_block = next_block
-                        current_block.make_block()
-                if event.key == pygame.K_RIGHT:
-                    next_block = nodes[pos1 + 1][pos2]
-                    if not next_block.is_frame() and not next_block.is_block():
-                        current_block.make_empty()
-                        current_block = next_block
-                        current_block.make_block()
-        if not moved:
-            current_block = create_shape(nodes)
-            moved = True
+                if event.key == pygame.K_LEFT and is_movable(
+                    current_shape, nodes, "left"
+                ):
+                    new_shape = []
+                    for node in current_shape:
+                        pos1, pos2 = node.get_pos()
+                        next_node = nodes[pos1 - 1][pos2]
+                        node.make_empty()
+                        new_shape.append(next_node)
+                    for node in new_shape:
+                        node.make_block()
+                    current_shape = new_shape
+
+                    active_node = get_active_node(current_shape)
+
+                if event.key == pygame.K_RIGHT and is_movable(
+                    current_shape, nodes, "right"
+                ):
+                    new_shape = []
+                    for node in current_shape:
+                        pos1, pos2 = node.get_pos()
+                        next_node = nodes[pos1 + 1][pos2]
+                        node.make_empty()
+                        new_shape.append(next_node)
+                    for node in new_shape:
+                        node.make_block()
+                    current_shape = new_shape
+
+                    active_node = get_active_node(current_shape)
+
+        if not moving:
+            check_lines(rows)
+            current_shape = create_shape(nodes)
+            active_node = get_active_node(current_shape)
+            moving = True
 
         if check_end(nodes):
             running = False
@@ -69,9 +108,9 @@ def main():
 
 def get_game_grid() -> list:
     nodes = []
-    for row in range(NUM_OF_ROWS):
+    for row in range(ROW_INDECIES):
         nodes.append([])
-        for col in range(NUM_OF_COLS):
+        for col in range(COL_INDECIES):
             nodes[row].append(Node(row, col, NODE_WIDTH, NODE_HEIGHT))
 
     frames = (
@@ -81,7 +120,7 @@ def get_game_grid() -> list:
             node
             for row in nodes
             for node in row
-            if row.index(node) == 0 or row.index(node) == NUM_OF_COLS - 1
+            if row.index(node) == 0 or row.index(node) == COL_INDECIES - 1
         ]
     )
     for node in frames:
