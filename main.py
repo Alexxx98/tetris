@@ -11,13 +11,7 @@ from settings import (
     COL_INDECIES,
 )
 from models import Node
-from utils import (
-    check_end,
-    create_shape,
-    get_rows,
-    check_lines,
-    is_movable,
-)
+from utils import check_end, create_shape, get_rows, check_lines, is_movable, move
 
 
 pygame.init()
@@ -29,7 +23,7 @@ clock = pygame.time.Clock()
 # Create new user events
 # Add block falling event
 block_falling = pygame.USEREVENT + 0
-pygame.time.set_timer(block_falling, 100)
+pygame.time.set_timer(block_falling, 300)
 
 
 def main():
@@ -42,20 +36,13 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == block_falling:
-                if moving and is_movable(bottom_blocks, nodes, "down"):
-                    new_shape = []
-                    for node in current_shape.get_blocks():
-                        pos1, pos2 = node.get_pos()
-                        next_node = nodes[pos1][pos2 + 1]
-                        node.make_empty()
-                        new_shape.append(next_node)
-                    for index, node in enumerate(new_shape):
-                        node.make_block()
-                        current_shape.update_block(index, node)
-                    left_blocks, right_blocks, bottom_blocks = (
-                        current_shape.update_blocks(
-                            nodes, "down", (left_blocks, right_blocks, bottom_blocks)
-                        )
+                direction = "down"
+                if moving and is_movable(bottom_blocks, nodes, direction):
+                    left_blocks, right_blocks, bottom_blocks = move(
+                        current_shape,
+                        nodes,
+                        direction,
+                        (left_blocks, right_blocks, bottom_blocks),
                     )
                 else:
                     moving = False
@@ -64,37 +51,21 @@ def main():
                 if event.key == pygame.K_LEFT and is_movable(
                     left_blocks, nodes, "left"
                 ):
-                    new_shape = []
-                    for node in current_shape.get_blocks():
-                        pos1, pos2 = node.get_pos()
-                        next_node = nodes[pos1 - 1][pos2]
-                        node.make_empty()
-                        new_shape.append(next_node)
-                    for index, node in enumerate(new_shape):
-                        node.make_block()
-                        current_shape.update_block(index, node)
-                    left_blocks, right_blocks, bottom_blocks = (
-                        current_shape.update_blocks(
-                            nodes, "left", (left_blocks, right_blocks, bottom_blocks)
-                        )
+                    left_blocks, right_blocks, bottom_blocks = move(
+                        current_shape,
+                        nodes,
+                        "left",
+                        (left_blocks, right_blocks, bottom_blocks),
                     )
 
                 if event.key == pygame.K_RIGHT and is_movable(
                     right_blocks, nodes, "right"
                 ):
-                    new_shape = []
-                    for node in current_shape.get_blocks():
-                        pos1, pos2 = node.get_pos()
-                        next_node = nodes[pos1 + 1][pos2]
-                        node.make_empty()
-                        new_shape.append(next_node)
-                    for index, node in enumerate(new_shape):
-                        node.make_block()
-                        current_shape.update_block(index, node)
-                    left_blocks, right_blocks, bottom_blocks = (
-                        current_shape.update_blocks(
-                            nodes, "right", (left_blocks, right_blocks, bottom_blocks)
-                        )
+                    left_blocks, right_blocks, bottom_blocks = move(
+                        current_shape,
+                        nodes,
+                        "right",
+                        (left_blocks, right_blocks, bottom_blocks),
                     )
 
         if not moving:

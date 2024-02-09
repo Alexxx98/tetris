@@ -1,6 +1,7 @@
 from settings import ROW_INDECIES, COL_INDECIES
 from models import Node, Shape
 
+from typing import List, Tuple
 import random
 
 
@@ -53,7 +54,7 @@ def get_shape(current_block: Node, nodes: list) -> Shape:
     return Shape(shapes[random.randint(1, len(shapes))])
 
 
-def create_shape(nodes: list) -> Shape:
+def create_shape(nodes: List[List[Node]]) -> Shape:
     starting_nodes: list = [
         node
         for row in nodes
@@ -84,7 +85,7 @@ def create_shape(nodes: list) -> Shape:
     return shape
 
 
-def is_movable(shape: list, nodes: list, direction: str) -> bool:
+def is_movable(shape: list, nodes: List[List[Node]], direction: str) -> bool:
     for node in shape:
         pos1, pos2 = node.get_pos()
         if direction == "right":
@@ -97,6 +98,32 @@ def is_movable(shape: list, nodes: list, direction: str) -> bool:
             if not nodes[pos1][pos2 + 1].is_empty():
                 return False
     return True
+
+
+def move(
+    current_shape: List[Node],
+    nodes: List[List[Node]],
+    direction: str,
+    blocks: Tuple[List[Node]],
+) -> List[List[Node]]:
+    new_shape = []
+    for node in current_shape.get_blocks():
+        pos1, pos2 = node.get_pos()
+        match direction:
+            case "left":
+                next_node = nodes[pos1 - 1][pos2]
+            case "right":
+                next_node = nodes[pos1 + 1][pos2]
+            case "down":
+                next_node = nodes[pos1][pos2 + 1]
+        node.make_empty()
+        new_shape.append(next_node)
+
+    for index, node in enumerate(new_shape):
+        node.make_block()
+        current_shape.update_block(index, node)
+
+    return current_shape.update_blocks(nodes, direction, blocks)
 
 
 def check_lines(rows: list) -> None:
@@ -113,7 +140,7 @@ def check_lines(rows: list) -> None:
         counter = 0
 
 
-def check_end(nodes: list) -> None:
+def check_end(nodes: List[List[Node]]) -> None:
     counter = 0
     for row in nodes:
         for node in row:
