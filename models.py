@@ -52,59 +52,54 @@ class Shape:
     def update_block(self, index: int, block: Node) -> None:
         self.shape[index] = block
 
-    def get_left_blocks(self) -> list:
-        pos1, pos2 = self.shape[0].get_pos()
-        most_left = pos1
-
-        # Check for most left position of the shape
-        for block in self.shape:
-            block_pos1, block_pos2 = block.get_pos()
-            if pos1 > block_pos1:
-                most_left = block_pos1
-
-        # check how many blocks are on that position
+    def get_left_blocks(self, nodes: list) -> list:
         result = []
         for block in self.shape:
             pos1, pos2 = block.get_pos()
-            if pos1 == most_left:
+            if not nodes[pos1 - 1][pos2].is_block():
                 result.append(block)
 
         return result
 
-    def get_right_blocks(self) -> list:
-        pos1, pos2 = self.shape[0].get_pos()
-        most_right = pos1
-
-        # Check for most left position of the shape
-        for block in self.shape:
-            block_pos1, block_pos2 = block.get_pos()
-            if pos1 < block_pos1:
-                most_right = block_pos1
-
-        # check how many blocks are on that position
+    def get_right_blocks(self, nodes: list) -> list:
         result = []
         for block in self.shape:
             pos1, pos2 = block.get_pos()
-            if pos1 == most_right:
+            if not nodes[pos1 + 1][pos2].is_block():
                 result.append(block)
 
         return result
 
-    def get_bottom_blocks(self) -> list:
-        pos1, pos2 = self.shape[0].get_pos()
-        most_bottom = pos2
-
-        # Check for most left position of the shape
-        for block in self.shape:
-            block_pos1, block_pos2 = block.get_pos()
-            if pos2 < block_pos2:
-                most_bottom = block_pos2
-
-        # check how many blocks are on that position
+    def get_bottom_blocks(self, nodes: list) -> list:
         result = []
         for block in self.shape:
             pos1, pos2 = block.get_pos()
-            if pos2 == most_bottom:
+            if not nodes[pos1][pos2 + 1].is_block():
                 result.append(block)
 
         return result
+
+    def update_blocks(self, nodes: list, direction: str, blocks: tuple) -> list:
+        new_blocks = []
+        if direction == "left":
+            for index, line in enumerate(blocks):
+                new_blocks.append([])
+                for block in line:
+                    pos1, pos2 = block.get_pos()
+                    new_blocks[index].append(nodes[pos1 - 1][pos2])
+
+        if direction == "right":
+            for index, line in enumerate(blocks):
+                new_blocks.append([])
+                for block in line:
+                    pos1, pos2 = block.get_pos()
+                    new_blocks[index].append(nodes[pos1 + 1][pos2])
+
+        if direction == "down":
+            for index, line in enumerate(blocks):
+                new_blocks.append([])
+                for block in line:
+                    pos1, pos2 = block.get_pos()
+                    new_blocks[index].append(nodes[pos1][pos2 + 1])
+
+        return new_blocks

@@ -29,7 +29,7 @@ clock = pygame.time.Clock()
 # Create new user events
 # Add block falling event
 block_falling = pygame.USEREVENT + 0
-pygame.time.set_timer(block_falling, 200)
+pygame.time.set_timer(block_falling, 100)
 
 
 def main():
@@ -42,8 +42,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == block_falling:
-                bottom_nodes = current_shape.get_bottom_blocks()
-                if moving and is_movable(bottom_nodes, nodes, "down"):
+                if moving and is_movable(bottom_blocks, nodes, "down"):
                     new_shape = []
                     for node in current_shape.get_blocks():
                         pos1, pos2 = node.get_pos()
@@ -53,12 +52,15 @@ def main():
                     for index, node in enumerate(new_shape):
                         node.make_block()
                         current_shape.update_block(index, node)
+                    left_blocks, right_blocks, bottom_blocks = (
+                        current_shape.update_blocks(
+                            nodes, "down", (left_blocks, right_blocks, bottom_blocks)
+                        )
+                    )
                 else:
                     moving = False
 
             if event.type == pygame.KEYDOWN:
-                left_blocks = current_shape.get_left_blocks()
-                right_blocks = current_shape.get_right_blocks()
                 if event.key == pygame.K_LEFT and is_movable(
                     left_blocks, nodes, "left"
                 ):
@@ -71,6 +73,11 @@ def main():
                     for index, node in enumerate(new_shape):
                         node.make_block()
                         current_shape.update_block(index, node)
+                    left_blocks, right_blocks, bottom_blocks = (
+                        current_shape.update_blocks(
+                            nodes, "left", (left_blocks, right_blocks, bottom_blocks)
+                        )
+                    )
 
                 if event.key == pygame.K_RIGHT and is_movable(
                     right_blocks, nodes, "right"
@@ -84,10 +91,18 @@ def main():
                     for index, node in enumerate(new_shape):
                         node.make_block()
                         current_shape.update_block(index, node)
+                    left_blocks, right_blocks, bottom_blocks = (
+                        current_shape.update_blocks(
+                            nodes, "right", (left_blocks, right_blocks, bottom_blocks)
+                        )
+                    )
 
         if not moving:
             check_lines(rows)
             current_shape = create_shape(nodes)
+            bottom_blocks = current_shape.get_bottom_blocks(nodes)
+            left_blocks = current_shape.get_left_blocks(nodes)
+            right_blocks = current_shape.get_right_blocks(nodes)
             moving = True
 
         if check_end(nodes):

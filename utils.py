@@ -36,6 +36,18 @@ def get_shape(current_block: Node, nodes: list) -> Shape:
             nodes[pos1][pos2 + 2],
             nodes[pos1][pos2 + 3],
         ],  # I
+        4: [
+            current_block,
+            nodes[pos1 + 1][pos2],
+            nodes[pos1 + 1][pos2 + 1],
+            nodes[pos1 + 2][pos2 + 1],
+        ],  # Z
+        5: [
+            current_block,
+            nodes[pos1 + 1][pos2],
+            nodes[pos1][pos2 + 1],
+            nodes[pos1 - 1][pos2 + 1],
+        ],  # S
     }
 
     return Shape(shapes[random.randint(1, len(shapes))])
@@ -52,14 +64,19 @@ def create_shape(nodes: list) -> Shape:
     # Get shape starting point and check if it fits within the grid
     while True:
         try:
-            starting_block: Node = starting_nodes[random.randint(1, ROW_INDECIES - 3)]
+            starting_block: Node = starting_nodes[
+                random.randint(0, len(starting_nodes) - 1)
+            ]
             shape: Shape = get_shape(starting_block, nodes)
             for node in shape.get_blocks():
-                if node.is_frame() or node.is_block():
+                if node.is_frame():
                     continue
-            break
+                if node.is_block():
+                    quit()
         except IndexError:
             continue
+        else:
+            break
 
     for node in shape.get_blocks():
         node.make_block()
