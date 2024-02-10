@@ -20,6 +20,8 @@ from utils import (
     move,
 )
 
+from typing import List
+
 
 pygame.init()
 
@@ -38,7 +40,6 @@ def main():
     nodes = get_game_grid()
     rows = get_rows(nodes)
     moving = False
-    current_shape = None
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -88,8 +89,7 @@ def main():
                     )
 
         if not moving:
-            if current_shape:
-                check_lines(current_shape, rows, nodes)
+            check_lines(rows, nodes)
             current_shape = create_shape(nodes)
             left_blocks = current_shape.get_side_blocks(nodes, "left")
             right_blocks = current_shape.get_side_blocks(nodes, "right")
@@ -106,7 +106,7 @@ def main():
     pygame.quit()
 
 
-def get_game_grid() -> list:
+def get_game_grid() -> List[List[Node]]:
     nodes = []
     for row in range(ROW_INDECIES):
         nodes.append([])
@@ -129,7 +129,7 @@ def get_game_grid() -> list:
     return nodes
 
 
-def draw_game_grid(nodes: list) -> None:
+def draw_game_grid(nodes: List[List[Node]]) -> None:
     for row in nodes:
         for node in row:
             pygame.draw.rect(

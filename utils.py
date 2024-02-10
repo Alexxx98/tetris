@@ -49,6 +49,12 @@ def get_shape(current_block: Node, nodes: list) -> Shape:
             nodes[pos1][pos2 + 1],
             nodes[pos1 - 1][pos2 + 1],
         ],  # S
+        6: [
+            current_block,
+            nodes[pos1][pos2 + 1],
+            nodes[pos1][pos2 + 2],
+            nodes[pos1 - 1][pos2 + 2],
+        ],  # J
     }
 
     return Shape(shapes[random.randint(1, len(shapes))])
@@ -69,9 +75,10 @@ def create_shape(nodes: List[List[Node]]) -> Shape:
                 random.randint(0, len(starting_nodes) - 1)
             ]
             shape: Shape = get_shape(starting_block, nodes)
+
             for node in shape.get_blocks():
                 if node.is_frame():
-                    continue
+                    raise IndexError
                 if node.is_block():
                     quit()
         except IndexError:
@@ -126,9 +133,7 @@ def move(
     return current_shape.update_side_blocks(nodes, direction, blocks)
 
 
-def check_lines(
-    current_shape: List[Node], rows: List[List[Node]], nodes: List[List[Node]]
-) -> None:
+def check_lines(rows: List[List[Node]], nodes: List[List[Node]]) -> None:
     empty_nodes = 0
 
     # Look for empty rows
@@ -146,7 +151,7 @@ def check_lines(
             new_blocks = []
             for row in rows[: rows.index(row)]:
                 for node in row:
-                    if node not in current_shape.get_blocks() and node.is_block():
+                    if node.is_block():
                         pos1, pos2 = node.get_pos()
                         node.make_empty()
                         new_blocks.append(nodes[pos1][pos2 + 1])
