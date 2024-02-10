@@ -10,7 +10,7 @@ from settings import (
     ROW_INDECIES,
     COL_INDECIES,
 )
-from models import Node
+from models import Node, Shape
 from utils import (
     check_end,
     create_shape,
@@ -29,17 +29,17 @@ WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 
 clock = pygame.time.Clock()
 
-# Create new user events
-# Add block falling event
+# Create block falling event
 block_falling = pygame.USEREVENT + 0
 pygame.time.set_timer(block_falling, 300)
 
 
 def main():
-    running = True
+    running: bool = True
     nodes = get_game_grid()
     rows = get_rows(nodes)
-    moving = False
+    moving: bool = False
+    current_shape: Shape = None
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -88,16 +88,18 @@ def main():
                         (left_blocks, right_blocks, bottom_blocks),
                     )
 
+                if event.key == pygame.K_UP:
+                    # TODO: Rotate the shape
+                    ...
+
         if not moving:
-            check_lines(rows, nodes)
+            if current_shape:
+                check_lines(current_shape, rows, nodes)
             current_shape = create_shape(nodes)
             left_blocks = current_shape.get_side_blocks(nodes, "left")
             right_blocks = current_shape.get_side_blocks(nodes, "right")
             bottom_blocks = current_shape.get_side_blocks(nodes, "down")
             moving = True
-
-        # if check_end(nodes):
-        #     running = False
 
         WINDOW.fill(DARK_BLUE)
         draw_game_grid(nodes)

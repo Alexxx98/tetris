@@ -1,4 +1,4 @@
-from settings import BLACK, GREY, RED, BLUE
+from settings import BLACK, GREY, RED, BLUE, GREEN, YELLOW, PURPLE, INDIGO, BROWN
 
 from typing import List, Tuple
 
@@ -25,8 +25,8 @@ class Node:
     def make_frame(self):
         self.color = GREY
 
-    def make_block(self):
-        self.color = RED
+    def make_block(self, shape_color: Tuple[int, int, int]):
+        self.color = shape_color
 
     def make_empty(self):
         self.color = BLACK
@@ -38,18 +38,35 @@ class Node:
         return self.color == GREY
 
     def is_block(self):
-        return self.color == RED
+        return self.color in (RED, GREEN, BLUE, YELLOW, BROWN, PURPLE, INDIGO)
 
     def is_empty(self):
         return self.color == BLACK
 
 
 class Shape:
-    def __init__(self, shape: list) -> None:
-        self.shape = shape
+    def __init__(
+        self, shapes: Tuple[List[Node]], shape: int, color: Tuple[int, int, int]
+    ) -> None:
+        self.shapes = shapes
+        self.shape = shapes[shape]
+        self.color = color
+
+    def get_shapes(self):
+        return self.shapes
 
     def get_blocks(self):
         return self.shape
+
+    def get_color(self):
+        return self.color
+
+    def rotate(self):
+        if self.shape == self.shapes[-2]:
+            self.shape = self.shapes[0]
+            return
+
+        ...
 
     def update_block(self, index: int, block: Node) -> None:
         self.shape[index] = block
@@ -60,13 +77,13 @@ class Shape:
             pos1, pos2 = block.get_pos()
             match direction:
                 case "left":
-                    if not nodes[pos1 - 1][pos2].is_block():
+                    if nodes[pos1 - 1][pos2] not in self.shape:
                         result.append(block)
                 case "right":
-                    if not nodes[pos1 + 1][pos2].is_block():
+                    if nodes[pos1 + 1][pos2] not in self.shape:
                         result.append(block)
                 case "down":
-                    if not nodes[pos1][pos2 + 1].is_block():
+                    if nodes[pos1][pos2 + 1] not in self.shape:
                         result.append(block)
 
         return result

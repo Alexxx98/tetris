@@ -1,4 +1,14 @@
-from settings import ROW_INDECIES, COL_INDECIES
+from settings import (
+    ROW_INDECIES,
+    COL_INDECIES,
+    RED,
+    BLUE,
+    GREEN,
+    YELLOW,
+    INDIGO,
+    BROWN,
+    PURPLE,
+)
 from models import Node, Shape
 
 from typing import List, Tuple
@@ -16,48 +26,97 @@ def get_rows(nodes: list) -> list:
     return rows
 
 
-def get_shape(current_block: Node, nodes: List[List[Node]]) -> Shape:
+def get_shapes(current_block: Node, nodes: List[List[Node]]) -> Shape:
     pos1, pos2 = current_block.get_pos()
     shapes: dict = {
-        1: [
-            current_block,
-            nodes[pos1 + 1][pos2],
-            nodes[pos1 + 1][pos2 + 1],
-            nodes[pos1][pos2 + 1],
-        ],  # O
-        2: [
-            current_block,
-            nodes[pos1][pos2 + 1],
-            nodes[pos1][pos2 + 2],
-            nodes[pos1 + 1][pos2 + 2],
-        ],  # L
-        3: [
-            current_block,
-            nodes[pos1][pos2 + 1],
-            nodes[pos1][pos2 + 2],
-            nodes[pos1][pos2 + 3],
-        ],  # I
-        4: [
-            current_block,
-            nodes[pos1 + 1][pos2],
-            nodes[pos1 + 1][pos2 + 1],
-            nodes[pos1 + 2][pos2 + 1],
-        ],  # Z
-        5: [
-            current_block,
-            nodes[pos1 + 1][pos2],
-            nodes[pos1][pos2 + 1],
-            nodes[pos1 - 1][pos2 + 1],
-        ],  # S
-        6: [
-            current_block,
-            nodes[pos1][pos2 + 1],
-            nodes[pos1][pos2 + 2],
-            nodes[pos1 - 1][pos2 + 2],
-        ],  # J
+        1: (
+            [
+                current_block,
+                nodes[pos1 + 1][pos2],
+                nodes[pos1 + 1][pos2 + 1],
+                nodes[pos1][pos2 + 1],
+            ],
+            GREEN,
+        ),  # O
+        2: (
+            [
+                current_block,
+                nodes[pos1][pos2 + 1],
+                nodes[pos1][pos2 + 2],
+                nodes[pos1 + 1][pos2 + 2],
+            ],
+            [
+                current_block,
+                nodes[pos1][pos2 + 1],
+                nodes[pos1 + 1][pos2],
+                nodes[pos1 + 2][pos2],
+            ],
+            [
+                current_block,
+                nodes[pos1 - 1][pos2],
+                nodes[pos1][pos2 + 1],
+                nodes[pos1][pos2 + 2],
+            ],
+            [
+                current_block,
+                nodes[pos1][pos2 + 1],
+                nodes[pos1 - 1][pos2 + 1],
+                nodes[pos1 - 2][pos2 + 1],
+            ],
+            BLUE,
+        ),  # L
+        3: (
+            [
+                current_block,
+                nodes[pos1][pos2 + 1],
+                nodes[pos1][pos2 + 2],
+                nodes[pos1][pos2 + 3],
+            ],
+            INDIGO,
+        ),  # I
+        4: (
+            [
+                current_block,
+                nodes[pos1 + 1][pos2],
+                nodes[pos1 + 1][pos2 + 1],
+                nodes[pos1 + 2][pos2 + 1],
+            ],
+            PURPLE,
+        ),  # Z
+        5: (
+            [
+                current_block,
+                nodes[pos1 + 1][pos2],
+                nodes[pos1][pos2 + 1],
+                nodes[pos1 - 1][pos2 + 1],
+            ],
+            YELLOW,
+        ),  # S
+        6: (
+            [
+                current_block,
+                nodes[pos1][pos2 + 1],
+                nodes[pos1][pos2 + 2],
+                nodes[pos1 - 1][pos2 + 2],
+            ],
+            RED,
+        ),  # J
+        7: (
+            [
+                current_block,
+                nodes[pos1 - 1][pos2],
+                nodes[pos1 + 1][pos2],
+                nodes[pos1][pos2 + 1],
+            ],
+            BROWN,
+        ),  # T
     }
 
-    return Shape(shapes[random.randint(1, len(shapes))])
+    variant = random.randint(1, len(shapes))
+    shape = random.randint(0, len(shapes[variant]) - 2)
+    color = shapes[variant][-1]
+
+    return Shape(shapes[variant][:-1], shape, color)
 
 
 def create_shape(nodes: List[List[Node]]) -> Shape:
@@ -74,7 +133,7 @@ def create_shape(nodes: List[List[Node]]) -> Shape:
             starting_block: Node = starting_nodes[
                 random.randint(0, len(starting_nodes) - 1)
             ]
-            shape: Shape = get_shape(starting_block, nodes)
+            shape: Shape = get_shapes(starting_block, nodes)
 
             for node in shape.get_blocks():
                 if node.is_frame():
@@ -87,7 +146,7 @@ def create_shape(nodes: List[List[Node]]) -> Shape:
             break
 
     for node in shape.get_blocks():
-        node.make_block()
+        node.make_block(shape.get_color())
 
     return shape
 
@@ -127,13 +186,15 @@ def move(
         new_shape.append(next_node)
 
     for index, node in enumerate(new_shape):
-        node.make_block()
+        node.make_block(current_shape.get_color())
         current_shape.update_block(index, node)
 
     return current_shape.update_side_blocks(nodes, direction, blocks)
 
 
-def check_lines(rows: List[List[Node]], nodes: List[List[Node]]) -> None:
+def check_lines(
+    current_shape: Shape, rows: List[List[Node]], nodes: List[List[Node]]
+) -> None:
     empty_nodes = 0
 
     # Look for empty rows
@@ -156,7 +217,7 @@ def check_lines(rows: List[List[Node]], nodes: List[List[Node]]) -> None:
                         node.make_empty()
                         new_blocks.append(nodes[pos1][pos2 + 1])
             for node in new_blocks:
-                node.make_block()
+                node.make_block(current_shape.get_color())
 
         empty_nodes = 0
 
