@@ -123,21 +123,37 @@ def move(
         node.make_block()
         current_shape.update_block(index, node)
 
-    return current_shape.update_blocks(nodes, direction, blocks)
+    return current_shape.update_side_blocks(nodes, direction, blocks)
 
 
-def check_lines(rows: list) -> None:
-    counter = 0
+def check_lines(
+    current_shape: List[Node], rows: List[List[Node]], nodes: List[List[Node]]
+) -> None:
+    empty_nodes = 0
+
+    # Look for empty rows
     for row in rows:
         for node in row:
             if node.is_empty():
-                counter += 1
+                empty_nodes += 1
 
-        if counter == 0:
-            for node in row:
-                node.make_empty()
+        # Clear all nodes if row full of blocks
+        if empty_nodes == 0:
+            for block in row:
+                block.make_empty()
 
-        counter = 0
+            # Move every blocks above by one node down
+            new_blocks = []
+            for row in rows[: rows.index(row)]:
+                for node in row:
+                    if node not in current_shape.get_blocks() and node.is_block():
+                        pos1, pos2 = node.get_pos()
+                        node.make_empty()
+                        new_blocks.append(nodes[pos1][pos2 + 1])
+            for node in new_blocks:
+                node.make_block()
+
+        empty_nodes = 0
 
 
 def check_end(nodes: List[List[Node]]) -> None:

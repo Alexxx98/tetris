@@ -1,5 +1,7 @@
 from settings import BLACK, GREY, RED, BLUE
 
+from typing import List, Tuple
+
 
 class Node:
     def __init__(self, row, col, width, height):
@@ -14,7 +16,7 @@ class Node:
     def __repr__(self):
         return f"{self.row, self.col}"
 
-    def get_pos(self):
+    def get_pos(self) -> Tuple[int, int]:
         return (self.row, self.col)
 
     def turn_right(self):
@@ -52,54 +54,35 @@ class Shape:
     def update_block(self, index: int, block: Node) -> None:
         self.shape[index] = block
 
-    def get_left_blocks(self, nodes: list) -> list:
-        result = []
+    def get_side_blocks(self, nodes: List[List[Node]], direction: str) -> List[Node]:
+        result: List[Node] = []
         for block in self.shape:
             pos1, pos2 = block.get_pos()
-            if not nodes[pos1 - 1][pos2].is_block():
-                result.append(block)
+            match direction:
+                case "left":
+                    if not nodes[pos1 - 1][pos2].is_block():
+                        result.append(block)
+                case "right":
+                    if not nodes[pos1 + 1][pos2].is_block():
+                        result.append(block)
+                case "down":
+                    if not nodes[pos1][pos2 + 1].is_block():
+                        result.append(block)
 
         return result
 
-    def get_right_blocks(self, nodes: list) -> list:
-        result = []
-        for block in self.shape:
-            pos1, pos2 = block.get_pos()
-            if not nodes[pos1 + 1][pos2].is_block():
-                result.append(block)
-
-        return result
-
-    def get_bottom_blocks(self, nodes: list) -> list:
-        result = []
-        for block in self.shape:
-            pos1, pos2 = block.get_pos()
-            if not nodes[pos1][pos2 + 1].is_block():
-                result.append(block)
-
-        return result
-
-    def update_blocks(self, nodes: list, direction: str, blocks: tuple) -> list:
+    def update_side_blocks(self, nodes: list, direction: str, blocks: tuple) -> list:
         new_blocks = []
-        if direction == "left":
-            for index, line in enumerate(blocks):
-                new_blocks.append([])
-                for block in line:
-                    pos1, pos2 = block.get_pos()
-                    new_blocks[index].append(nodes[pos1 - 1][pos2])
-
-        if direction == "right":
-            for index, line in enumerate(blocks):
-                new_blocks.append([])
-                for block in line:
-                    pos1, pos2 = block.get_pos()
-                    new_blocks[index].append(nodes[pos1 + 1][pos2])
-
-        if direction == "down":
-            for index, line in enumerate(blocks):
-                new_blocks.append([])
-                for block in line:
-                    pos1, pos2 = block.get_pos()
-                    new_blocks[index].append(nodes[pos1][pos2 + 1])
+        for index, line in enumerate(blocks):
+            new_blocks.append([])
+            for block in line:
+                pos1, pos2 = block.get_pos()
+                match direction:
+                    case "left":
+                        new_blocks[index].append(nodes[pos1 - 1][pos2])
+                    case "right":
+                        new_blocks[index].append(nodes[pos1 + 1][pos2])
+                    case "down":
+                        new_blocks[index].append(nodes[pos1][pos2 + 1])
 
         return new_blocks

@@ -11,7 +11,14 @@ from settings import (
     COL_INDECIES,
 )
 from models import Node
-from utils import check_end, create_shape, get_rows, check_lines, is_movable, move
+from utils import (
+    check_end,
+    create_shape,
+    get_rows,
+    check_lines,
+    is_movable,
+    move,
+)
 
 
 pygame.init()
@@ -31,10 +38,12 @@ def main():
     nodes = get_game_grid()
     rows = get_rows(nodes)
     moving = False
+    current_shape = None
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             if event.type == block_falling:
                 direction = "down"
                 if moving and is_movable(bottom_blocks, nodes, direction):
@@ -68,16 +77,27 @@ def main():
                         (left_blocks, right_blocks, bottom_blocks),
                     )
 
+                if event.key == pygame.K_DOWN and is_movable(
+                    bottom_blocks, nodes, "down"
+                ):
+                    left_blocks, right_blocks, bottom_blocks = move(
+                        current_shape,
+                        nodes,
+                        "down",
+                        (left_blocks, right_blocks, bottom_blocks),
+                    )
+
         if not moving:
-            check_lines(rows)
+            if current_shape:
+                check_lines(current_shape, rows, nodes)
             current_shape = create_shape(nodes)
-            bottom_blocks = current_shape.get_bottom_blocks(nodes)
-            left_blocks = current_shape.get_left_blocks(nodes)
-            right_blocks = current_shape.get_right_blocks(nodes)
+            left_blocks = current_shape.get_side_blocks(nodes, "left")
+            right_blocks = current_shape.get_side_blocks(nodes, "right")
+            bottom_blocks = current_shape.get_side_blocks(nodes, "down")
             moving = True
 
-        if check_end(nodes):
-            running = False
+        # if check_end(nodes):
+        #     running = False
 
         WINDOW.fill(DARK_BLUE)
         draw_game_grid(nodes)
