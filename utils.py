@@ -3,7 +3,6 @@ from models import Node, Shape
 
 from typing import List, Tuple
 import random
-import time
 
 
 def get_rows(nodes: list) -> list:
