@@ -3,6 +3,7 @@ from models import Node, Shape
 
 from typing import List, Tuple
 import random
+import time
 
 
 def get_rows(nodes: list) -> list:
@@ -16,7 +17,7 @@ def get_rows(nodes: list) -> list:
     return rows
 
 
-def get_shape(current_block: Node, nodes: list) -> Shape:
+def get_shape(current_block: Node, nodes: List[List[Node]]) -> Shape:
     pos1, pos2 = current_block.get_pos()
     shapes: dict = {
         1: [
