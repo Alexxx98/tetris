@@ -1,4 +1,4 @@
-from settings import BLACK, GREY, RED, BLUE, GREEN, YELLOW, PURPLE, INDIGO, BROWN
+from settings import BLACK, GREY, RED, BLUE, GREEN, YELLOW, PURPLE, CYAN, BROWN
 
 from typing import List, Tuple
 
@@ -38,7 +38,7 @@ class Node:
         return self.color == GREY
 
     def is_block(self):
-        return self.color in (RED, GREEN, BLUE, YELLOW, BROWN, PURPLE, INDIGO)
+        return self.color in (RED, GREEN, BLUE, YELLOW, BROWN, PURPLE, CYAN)
 
     def is_empty(self):
         return self.color == BLACK
@@ -61,12 +61,22 @@ class Shape:
     def get_color(self):
         return self.color
 
-    def rotate(self):
-        if self.shape == self.shapes[-2]:
-            self.shape = self.shapes[0]
-            return
+    def update_shape(self, new_shape: List[Node], shape_index: int):
+        self.shapes[shape_index] = new_shape
 
-        ...
+    def rotate(self):
+        if self.shape == self.shapes[-1]:
+            next_shape = self.shapes[0]
+        else:
+            next_shape = self.shapes[(self.shapes.index(self.shape) + 1)]
+
+        for block in self.shape:
+            block.make_empty()
+
+        self.shape = next_shape
+
+        for node in self.shape:
+            node.make_block(self.color)
 
     def update_block(self, index: int, block: Node) -> None:
         self.shape[index] = block

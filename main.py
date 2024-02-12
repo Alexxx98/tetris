@@ -21,6 +21,7 @@ from utils import (
 )
 
 from typing import List
+import time
 
 
 pygame.init()
@@ -88,14 +89,18 @@ def main():
                         (left_blocks, right_blocks, bottom_blocks),
                     )
 
+                # Rotate the shape
                 if event.key == pygame.K_UP:
-                    # TODO: Rotate the shape
-                    ...
+                    current_shape.rotate()
+
+                    left_blocks = current_shape.get_side_blocks(nodes, "left")
+                    right_blocks = current_shape.get_side_blocks(nodes, "right")
+                    bottom_blocks = current_shape.get_side_blocks(nodes, "down")
 
         if not moving:
             if current_shape:
                 check_lines(current_shape, rows, nodes)
-            current_shape = create_shape(nodes)
+            current_shape = create_shape(rows, nodes)
             left_blocks = current_shape.get_side_blocks(nodes, "left")
             right_blocks = current_shape.get_side_blocks(nodes, "right")
             bottom_blocks = current_shape.get_side_blocks(nodes, "down")

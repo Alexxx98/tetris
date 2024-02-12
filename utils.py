@@ -5,7 +5,7 @@ from settings import (
     BLUE,
     GREEN,
     YELLOW,
-    INDIGO,
+    CYAN,
     BROWN,
     PURPLE,
 )
@@ -40,39 +40,45 @@ def get_shapes(current_block: Node, nodes: List[List[Node]]) -> Shape:
         ),  # O
         2: (
             [
+                nodes[pos1][pos2 - 1],
                 current_block,
                 nodes[pos1][pos2 + 1],
-                nodes[pos1][pos2 + 2],
-                nodes[pos1 + 1][pos2 + 2],
+                nodes[pos1 + 1][pos2 + 1],
             ],
             [
-                current_block,
-                nodes[pos1][pos2 + 1],
-                nodes[pos1 + 1][pos2],
-                nodes[pos1 + 2][pos2],
-            ],
-            [
-                current_block,
-                nodes[pos1 - 1][pos2],
-                nodes[pos1][pos2 + 1],
-                nodes[pos1][pos2 + 2],
-            ],
-            [
-                current_block,
-                nodes[pos1][pos2 + 1],
                 nodes[pos1 - 1][pos2 + 1],
-                nodes[pos1 - 2][pos2 + 1],
+                nodes[pos1 - 1][pos2],
+                current_block,
+                nodes[pos1 + 1][pos2],
+            ],
+            [
+                nodes[pos1 - 1][pos2 - 1],
+                nodes[pos1][pos2 - 1],
+                current_block,
+                nodes[pos1][pos2 + 1],
+            ],
+            [
+                nodes[pos1 - 1][pos2],
+                current_block,
+                nodes[pos1 + 1][pos2],
+                nodes[pos1 + 1][pos2 - 1],
             ],
             BLUE,
         ),  # L
         3: (
             [
+                nodes[pos1][pos2 - 1],
                 current_block,
                 nodes[pos1][pos2 + 1],
                 nodes[pos1][pos2 + 2],
-                nodes[pos1][pos2 + 3],
             ],
-            INDIGO,
+            [
+                nodes[pos1 - 1][pos2],
+                current_block,
+                nodes[pos1 + 1][pos2],
+                nodes[pos1 + 2][pos2],
+            ],
+            CYAN,
         ),  # I
         4: (
             [
@@ -119,31 +125,39 @@ def get_shapes(current_block: Node, nodes: List[List[Node]]) -> Shape:
     return Shape(shapes[variant][:-1], shape, color)
 
 
-def create_shape(nodes: List[List[Node]]) -> Shape:
-    starting_nodes: list = [
-        node
-        for row in nodes
-        for node in row
-        if nodes.index(row) in range(1, ROW_INDECIES - 1) and row.index(node) == 1
-    ]
+def create_shape(rows: List[List[Node]], nodes: List[List[Node]]) -> Shape:
+    starting_rows: list = rows[:3]
 
     # Get shape starting point and check if it fits within the grid
-    while True:
+    done = False
+    valid = True
+    row_index = 1
+    while not done:
         try:
-            starting_block: Node = starting_nodes[
-                random.randint(0, len(starting_nodes) - 1)
-            ]
-            shape: Shape = get_shapes(starting_block, nodes)
+            starting_node_index = random.randint(0, len(starting_rows[1]) - 1)
+            starting_node = starting_rows[row_index][starting_node_index]
+            shape: Shape = get_shapes(starting_node, nodes)
 
             for node in shape.get_blocks():
                 if node.is_frame():
+                    valid = False
+
+            if valid:
+                done = True
+
+            for block in shape.get_blocks():
+                if block.is_frame():
                     raise IndexError
+
                 if node.is_block():
                     quit()
         except IndexError:
+            row_index += 1
+            if row_index > 3:
+                row_index = 0
             continue
         else:
-            break
+            done = True
 
     for node in shape.get_blocks():
         node.make_block(shape.get_color())
@@ -167,12 +181,12 @@ def is_movable(shape: list, nodes: List[List[Node]], direction: str) -> bool:
 
 
 def move(
-    current_shape: List[Node],
+    current_shape: Shape,
     nodes: List[List[Node]],
     direction: str,
     blocks: Tuple[List[Node]],
 ) -> List[List[Node]]:
-    new_shape = []
+    new_current_shape = []
     for node in current_shape.get_blocks():
         pos1, pos2 = node.get_pos()
         match direction:
@@ -183,9 +197,9 @@ def move(
             case "down":
                 next_node = nodes[pos1][pos2 + 1]
         node.make_empty()
-        new_shape.append(next_node)
+        new_current_shape.append(next_node)
 
-    for index, node in enumerate(new_shape):
+    for index, node in enumerate(new_current_shape):
         node.make_block(current_shape.get_color())
         current_shape.update_block(index, node)
 
