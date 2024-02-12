@@ -258,8 +258,7 @@ def move(
                     node.make_block(current_shape.get_color())
                 current_shape.update_block(variant_index, index, node)
     except IndexError:
-        print(node)
-        print(current_shape.get_current_shape)
+        pass
 
     return current_shape.update_side_blocks(nodes, direction, blocks)
 
