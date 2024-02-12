@@ -55,20 +55,26 @@ class Shape:
     def get_shapes(self):
         return self.shapes
 
-    def get_blocks(self):
+    def get_current_shape(self):
         return self.shape
+
+    def get_variant_nodes(self, variant: int):
+        return self.shapes[variant]
 
     def get_color(self):
         return self.color
 
-    def update_shape(self, new_shape: List[Node], shape_index: int):
-        self.shapes[shape_index] = new_shape
-
     def rotate(self):
+        # Choose next shape
         if self.shape == self.shapes[-1]:
             next_shape = self.shapes[0]
         else:
             next_shape = self.shapes[(self.shapes.index(self.shape) + 1)]
+
+        # Check if next shape
+        for block in next_shape:
+            if block.is_frame() or (block.is_block() and block not in self.shape):
+                return
 
         for block in self.shape:
             block.make_empty()
@@ -78,8 +84,8 @@ class Shape:
         for node in self.shape:
             node.make_block(self.color)
 
-    def update_block(self, index: int, block: Node) -> None:
-        self.shape[index] = block
+    def update_block(self, variant: int, node: int, block: Node) -> None:
+        self.shapes[variant][node] = block
 
     def get_side_blocks(self, nodes: List[List[Node]], direction: str) -> List[Node]:
         result: List[Node] = []

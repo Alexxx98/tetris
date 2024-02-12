@@ -82,37 +82,85 @@ def get_shapes(current_block: Node, nodes: List[List[Node]]) -> Shape:
         ),  # I
         4: (
             [
+                nodes[pos1 - 1][pos2],
                 current_block,
-                nodes[pos1 + 1][pos2],
+                nodes[pos1][pos2 + 1],
                 nodes[pos1 + 1][pos2 + 1],
-                nodes[pos1 + 2][pos2 + 1],
+            ],
+            [
+                nodes[pos1][pos2 - 1],
+                current_block,
+                nodes[pos1 - 1][pos2],
+                nodes[pos1 - 1][pos2 + 1],
             ],
             PURPLE,
         ),  # Z
         5: (
             [
-                current_block,
                 nodes[pos1 + 1][pos2],
+                current_block,
                 nodes[pos1][pos2 + 1],
                 nodes[pos1 - 1][pos2 + 1],
+            ],
+            [
+                nodes[pos1][pos2 - 1],
+                current_block,
+                nodes[pos1 + 1][pos2],
+                nodes[pos1 + 1][pos2 + 1],
             ],
             YELLOW,
         ),  # S
         6: (
             [
+                nodes[pos1][pos2 - 1],
                 current_block,
                 nodes[pos1][pos2 + 1],
-                nodes[pos1][pos2 + 2],
-                nodes[pos1 - 1][pos2 + 2],
+                nodes[pos1 - 1][pos2 + 1],
+            ],
+            [
+                nodes[pos1 + 1][pos2],
+                current_block,
+                nodes[pos1 - 1][pos2],
+                nodes[pos1 - 1][pos2 - 1],
+            ],
+            [
+                nodes[pos1][pos2 + 1],
+                current_block,
+                nodes[pos1][pos2 - 1],
+                nodes[pos1 + 1][pos2 - 1],
+            ],
+            [
+                nodes[pos1 - 1][pos2],
+                current_block,
+                nodes[pos1 + 1][pos2],
+                nodes[pos1 + 1][pos2 + 1],
             ],
             RED,
         ),  # J
         7: (
             [
-                current_block,
                 nodes[pos1 - 1][pos2],
+                current_block,
                 nodes[pos1 + 1][pos2],
                 nodes[pos1][pos2 + 1],
+            ],
+            [
+                nodes[pos1][pos2 - 1],
+                current_block,
+                nodes[pos1][pos2 + 1],
+                nodes[pos1 - 1][pos2],
+            ],
+            [
+                nodes[pos1 + 1][pos2],
+                current_block,
+                nodes[pos1 - 1][pos2],
+                nodes[pos1][pos2 - 1],
+            ],
+            [
+                nodes[pos1][pos2 + 1],
+                current_block,
+                nodes[pos1][pos2 - 1],
+                nodes[pos1 + 1][pos2],
             ],
             BROWN,
         ),  # T
@@ -138,14 +186,14 @@ def create_shape(rows: List[List[Node]], nodes: List[List[Node]]) -> Shape:
             starting_node = starting_rows[row_index][starting_node_index]
             shape: Shape = get_shapes(starting_node, nodes)
 
-            for node in shape.get_blocks():
+            for node in shape.get_current_shape():
                 if node.is_frame():
                     valid = False
 
             if valid:
                 done = True
 
-            for block in shape.get_blocks():
+            for block in shape.get_current_shape():
                 if block.is_frame():
                     raise IndexError
 
@@ -159,7 +207,7 @@ def create_shape(rows: List[List[Node]], nodes: List[List[Node]]) -> Shape:
         else:
             done = True
 
-    for node in shape.get_blocks():
+    for node in shape.get_current_shape():
         node.make_block(shape.get_color())
 
     return shape
@@ -186,22 +234,32 @@ def move(
     direction: str,
     blocks: Tuple[List[Node]],
 ) -> List[List[Node]]:
-    new_current_shape = []
-    for node in current_shape.get_blocks():
-        pos1, pos2 = node.get_pos()
-        match direction:
-            case "left":
-                next_node = nodes[pos1 - 1][pos2]
-            case "right":
-                next_node = nodes[pos1 + 1][pos2]
-            case "down":
-                next_node = nodes[pos1][pos2 + 1]
-        node.make_empty()
-        new_current_shape.append(next_node)
 
-    for index, node in enumerate(new_current_shape):
-        node.make_block(current_shape.get_color())
-        current_shape.update_block(index, node)
+    # Get next nodes for every shape variant
+    try:
+        for variant_index, variant in enumerate(current_shape.get_shapes()):
+            new_shape = []
+            for node in current_shape.get_variant_nodes(variant_index):
+                pos1, pos2 = node.get_pos()
+                match direction:
+                    case "left":
+                        next_node = nodes[pos1 - 1][pos2]
+                    case "right":
+                        next_node = nodes[pos1 + 1][pos2]
+                    case "down":
+                        next_node = nodes[pos1][pos2 + 1]
+
+                if variant == current_shape.get_current_shape():
+                    node.make_empty()
+                new_shape.append(next_node)
+
+            for index, node in enumerate(new_shape):
+                if variant == current_shape.get_current_shape():
+                    node.make_block(current_shape.get_color())
+                current_shape.update_block(variant_index, index, node)
+    except IndexError:
+        print(node)
+        print(current_shape.get_current_shape)
 
     return current_shape.update_side_blocks(nodes, direction, blocks)
 
