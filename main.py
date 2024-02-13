@@ -36,7 +36,7 @@ clock = pygame.time.Clock()
 
 # Create block falling event
 block_falling = pygame.USEREVENT + 0
-pygame.time.set_timer(block_falling, 300)
+pygame.time.set_timer(block_falling, 1000)
 
 
 def main():
@@ -139,11 +139,16 @@ def get_game_grid() -> List[List[Node]]:
     for node in frames:
         node.make_frame()
 
+    # Add col from right side to fix I shape variant problem
+    nodes.append([])
+    for col in range(COL_INDECIES):
+        nodes[-1].append(Node(ROW_INDECIES, col, NODE_WIDTH, NODE_HEIGHT))
+
     return nodes
 
 
 def draw_game_grid(nodes: List[List[Node]]) -> None:
-    for row in nodes:
+    for row in nodes[:-1]:
         for node in row:
             pygame.draw.rect(
                 WINDOW, node.color, pygame.Rect(node.x, node.y, node.width, node.height)

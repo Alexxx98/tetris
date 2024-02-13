@@ -236,10 +236,10 @@ def move(
 ) -> List[List[Node]]:
 
     # Get next nodes for every shape variant
-    try:
-        for variant_index, variant in enumerate(current_shape.get_shapes()):
-            new_shape = []
-            for node in current_shape.get_variant_nodes(variant_index):
+    for variant_index, variant in enumerate(current_shape.get_shapes()):
+        new_shape = []
+        for node in current_shape.get_variant_nodes(variant_index):
+            try:
                 pos1, pos2 = node.get_pos()
                 match direction:
                     case "left":
@@ -248,17 +248,17 @@ def move(
                         next_node = nodes[pos1 + 1][pos2]
                     case "down":
                         next_node = nodes[pos1][pos2 + 1]
+            except IndexError:
+                pass
 
-                if variant == current_shape.get_current_shape():
-                    node.make_empty()
-                new_shape.append(next_node)
+            if variant == current_shape.get_current_shape():
+                node.make_empty()
+            new_shape.append(next_node)
 
-            for index, node in enumerate(new_shape):
-                if variant == current_shape.get_current_shape():
-                    node.make_block(current_shape.get_color())
-                current_shape.update_block(variant_index, index, node)
-    except IndexError:
-        pass
+        for index, node in enumerate(new_shape):
+            if variant == current_shape.get_current_shape():
+                node.make_block(current_shape.get_color())
+            current_shape.update_block(variant_index, index, node)
 
     return current_shape.update_side_blocks(nodes, direction, blocks)
 

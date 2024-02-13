@@ -1,4 +1,15 @@
-from settings import BLACK, GREY, RED, BLUE, GREEN, YELLOW, PURPLE, CYAN, BROWN
+from settings import (
+    BLACK,
+    GREY,
+    RED,
+    BLUE,
+    GREEN,
+    YELLOW,
+    PURPLE,
+    CYAN,
+    BROWN,
+    DARK_BLUE,
+)
 
 from typing import List, Tuple
 
@@ -30,9 +41,6 @@ class Node:
 
     def make_empty(self):
         self.color = BLACK
-
-    def make_open(self):
-        self.color = BLUE
 
     def is_frame(self):
         return self.color == GREY
