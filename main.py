@@ -36,7 +36,7 @@ clock = pygame.time.Clock()
 
 # Create block falling event
 block_falling = pygame.USEREVENT + 0
-pygame.time.set_timer(block_falling, 1000)
+pygame.time.set_timer(block_falling, 300)
 
 
 def main():

@@ -8,7 +8,6 @@ from settings import (
     PURPLE,
     CYAN,
     BROWN,
-    DARK_BLUE,
 )
 
 from typing import List, Tuple
