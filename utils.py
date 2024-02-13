@@ -265,17 +265,21 @@ def move(
 
 def check_lines(
     current_shape: Shape, rows: List[List[Node]], nodes: List[List[Node]]
-) -> None:
+) -> int:
     empty_nodes = 0
+    lines = 0
+    points = 0
 
     # Look for empty rows
-    for row in rows:
+    for row in rows[1:]:
         for node in row:
             if node.is_empty():
                 empty_nodes += 1
 
         # Clear all nodes if row full of blocks
         if empty_nodes == 0:
+            lines += 1
+            points += 100
             for block in row:
                 block.make_empty()
 
@@ -291,6 +295,8 @@ def check_lines(
                 node.make_block(current_shape.get_color())
 
         empty_nodes = 0
+
+    return lines * points
 
 
 def check_end(nodes: List[List[Node]]) -> None:

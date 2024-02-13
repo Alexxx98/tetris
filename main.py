@@ -3,16 +3,21 @@ from settings import (
     WIDTH,
     HEIGHT,
     FPS,
+    WHITE,
     BLACK,
+    GREY,
     DARK_BLUE,
     NODE_HEIGHT,
     NODE_WIDTH,
     ROW_INDECIES,
     COL_INDECIES,
+    SB_WIDTH,
+    SB_HEIGHT,
+    SB_X,
+    SB_Y,
 )
 from models import Node, Shape
 from utils import (
-    check_end,
     create_shape,
     get_rows,
     check_lines,
@@ -21,7 +26,6 @@ from utils import (
 )
 
 from typing import List
-import time
 
 
 pygame.init()
@@ -41,6 +45,7 @@ def main():
     rows = get_rows(nodes)
     moving: bool = False
     current_shape: Shape = None
+    score = 0
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -99,7 +104,7 @@ def main():
 
         if not moving:
             if current_shape:
-                check_lines(current_shape, rows, nodes)
+                score += check_lines(current_shape, rows, nodes)
             current_shape = create_shape(rows, nodes)
             left_blocks = current_shape.get_side_blocks(nodes, "left")
             right_blocks = current_shape.get_side_blocks(nodes, "right")
@@ -108,6 +113,7 @@ def main():
 
         WINDOW.fill(DARK_BLUE)
         draw_game_grid(nodes)
+        draw_score_board(score)
         pygame.display.flip()
         clock.tick(FPS)
     pygame.quit()
@@ -146,6 +152,25 @@ def draw_game_grid(nodes: List[List[Node]]) -> None:
             pygame.draw.rect(
                 WINDOW, BLACK, pygame.Rect(node.x, node.y, node.width, node.height), 1
             )
+
+
+def draw_score_board(score):
+    # Draw background and frame
+    pygame.draw.rect(WINDOW, BLACK, pygame.Rect(SB_X, SB_Y, SB_WIDTH, SB_HEIGHT))
+    pygame.draw.rect(WINDOW, GREY, pygame.Rect(SB_X, SB_Y, SB_WIDTH, SB_HEIGHT), 2)
+
+    # Draw score content
+    font = pygame.font.Font("UrbanBlockerSolid.ttf", 38)
+    score_text = font.render("Score:", True, WHITE)
+
+    font = pygame.font.SysFont("arial", 38)
+    score_value = font.render(str(score), True, WHITE)
+
+    text_position = (SB_X + SB_WIDTH // 3, SB_Y + SB_HEIGHT // 2 - 50)
+    value_position = (SB_X + SB_WIDTH // 3, SB_Y + SB_HEIGHT // 2)
+
+    WINDOW.blit(score_text, text_position)
+    WINDOW.blit(score_value, value_position)
 
 
 if __name__ == "__main__":

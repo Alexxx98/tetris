@@ -22,3 +22,9 @@ YELLOW = (255, 255, 0)
 PURPLE = (255, 0, 255)
 CYAN = (0, 255, 255)
 BROWN = (160, 82, 45)
+
+# Score board parameters
+SB_WIDTH = 300
+SB_HEIGHT = 150
+SB_X = WIDTH - (SB_WIDTH + 50)
+SB_Y = HEIGHT - (SB_HEIGHT + 450)
