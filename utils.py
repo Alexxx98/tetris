@@ -12,6 +12,7 @@ from settings import (
 from models import Node, Shape
 
 from typing import List, Tuple
+from queue import Queue
 import random
 
 
@@ -173,14 +174,15 @@ def get_shapes(current_block: Node, nodes: List[List[Node]]) -> Shape:
     return Shape(shapes[variant][:-1], shape, color)
 
 
-def create_shape(rows: List[List[Node]], nodes: List[List[Node]]) -> Shape:
+def create_shape(
+    rows: List[List[Node]], nodes: List[List[Node]], shapes: Queue
+) -> Shape:
     starting_rows: list = rows[:3]
 
     # Get shape starting point and check if it fits within the grid
-    done = False
     valid = True
     row_index = 1
-    while not done:
+    while not shapes.full():
         try:
             starting_node_index = random.randint(0, len(starting_rows[1]) - 1)
             starting_node = starting_rows[row_index][starting_node_index]
@@ -191,7 +193,9 @@ def create_shape(rows: List[List[Node]], nodes: List[List[Node]]) -> Shape:
                     valid = False
 
             if valid:
-                done = True
+                shapes.put(shape)
+                row_index = 0
+                continue
 
             for block in shape.get_current_shape():
                 if block.is_frame():
@@ -200,17 +204,17 @@ def create_shape(rows: List[List[Node]], nodes: List[List[Node]]) -> Shape:
                 if node.is_block():
                     quit()
         except IndexError:
+            valid = True
             row_index += 1
             if row_index > 3:
                 row_index = 0
             continue
-        else:
-            done = True
 
+    shape = shapes.queue[0]
     for node in shape.get_current_shape():
         node.make_block(shape.get_color())
 
-    return shape
+    return shapes
 
 
 def is_movable(shape: list, nodes: List[List[Node]], direction: str) -> bool:
@@ -297,15 +301,3 @@ def check_lines(
         empty_nodes = 0
 
     return lines * points
-
-
-def check_end(nodes: List[List[Node]]) -> None:
-    counter = 0
-    for row in nodes:
-        for node in row:
-            if node.is_empty():
-                counter += 1
-
-    if counter == 0:
-        return True
-    return False

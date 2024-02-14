@@ -15,6 +15,10 @@ from settings import (
     SB_HEIGHT,
     SB_X,
     SB_Y,
+    NS_WIDTH,
+    NS_HEIGHT,
+    NS_X,
+    NS_Y,
 )
 from models import Node, Shape
 from utils import (
@@ -26,6 +30,7 @@ from utils import (
 )
 
 from typing import List
+from queue import Queue
 
 
 pygame.init()
@@ -45,7 +50,9 @@ def main():
     rows = get_rows(nodes)
     moving: bool = False
     current_shape: Shape = None
-    score = 0
+    shapes: Queue = Queue(2)
+    score: int = 0
+    next_shape_nodes = get_next_shape_grid()
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -105,7 +112,9 @@ def main():
         if not moving:
             if current_shape:
                 score += check_lines(current_shape, rows, nodes)
-            current_shape = create_shape(rows, nodes)
+            shapes = create_shape(rows, nodes, shapes)
+            current_shape = shapes.get()
+            next_shape = shapes.queue[0]
             left_blocks = current_shape.get_side_blocks(nodes, "left")
             right_blocks = current_shape.get_side_blocks(nodes, "right")
             bottom_blocks = current_shape.get_side_blocks(nodes, "down")
@@ -114,8 +123,10 @@ def main():
         WINDOW.fill(DARK_BLUE)
         draw_game_grid(nodes)
         draw_score_board(score)
+        draw_next_shape_area(next_shape_nodes, next_shape)
         pygame.display.flip()
         clock.tick(FPS)
+
     pygame.quit()
 
 
@@ -162,7 +173,7 @@ def draw_game_grid(nodes: List[List[Node]]) -> None:
 def draw_score_board(score):
     # Draw background and frame
     pygame.draw.rect(WINDOW, BLACK, pygame.Rect(SB_X, SB_Y, SB_WIDTH, SB_HEIGHT))
-    pygame.draw.rect(WINDOW, GREY, pygame.Rect(SB_X, SB_Y, SB_WIDTH, SB_HEIGHT), 2)
+    pygame.draw.rect(WINDOW, GREY, pygame.Rect(SB_X, SB_Y, SB_WIDTH, SB_HEIGHT), 5)
 
     # Draw score content
     font = pygame.font.Font("UrbanBlockerSolid.ttf", 38)
@@ -176,6 +187,64 @@ def draw_score_board(score):
 
     WINDOW.blit(score_text, text_position)
     WINDOW.blit(score_value, value_position)
+
+
+def get_next_shape_grid():
+    nodes = []
+    row_indicies = NS_WIDTH // NODE_WIDTH
+    col_indicies = NS_HEIGHT // NODE_HEIGHT
+    for row in range(row_indicies):
+        nodes.append([])
+        for col in range(col_indicies):
+            nodes[row].append(Node(row, col, NODE_WIDTH, NODE_HEIGHT))
+
+        for node in nodes[row]:
+            node.x += NS_X - node.width
+            node.y += NS_Y - node.height
+
+    return nodes
+
+
+def draw_next_shape_area(nodes: List[List[Node]], next_shape: Shape) -> None:
+    # Draw grid
+    for line in nodes:
+        for node in line:
+            pygame.draw.rect(
+                WINDOW, node.color, pygame.Rect(node.x, node.y, node.width, node.height)
+            )
+    pygame.draw.rect(WINDOW, BLACK, pygame.Rect(NS_X, NS_Y, NS_WIDTH, NS_HEIGHT))
+
+    # Draw shape
+    shape = next_shape.get_current_shape()
+    for node in shape:
+        x_diff = node.x - shape[0].x
+        y_diff = node.y - shape[0].y
+
+        pygame.draw.rect(
+            WINDOW,
+            next_shape.color,
+            pygame.Rect(
+                NS_X + NODE_WIDTH * 4 - x_diff,
+                NS_Y + NODE_HEIGHT * 3 - y_diff,
+                node.width,
+                node.height,
+            ),
+        )
+
+        pygame.draw.rect(
+            WINDOW,
+            BLACK,
+            pygame.Rect(
+                NS_X + NODE_WIDTH * 4 - x_diff,
+                NS_Y + NODE_HEIGHT * 3 - y_diff,
+                node.width,
+                node.height,
+            ),
+            1,
+        )
+
+    # Draw frame
+    pygame.draw.rect(WINDOW, GREY, pygame.Rect(NS_X, NS_Y, NS_WIDTH, NS_HEIGHT), 5)
 
 
 if __name__ == "__main__":

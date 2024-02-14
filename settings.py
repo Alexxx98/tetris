@@ -25,6 +25,12 @@ BROWN = (160, 82, 45)
 
 # Score board parameters
 SB_WIDTH = 300
-SB_HEIGHT = 150
+SB_HEIGHT = 175
 SB_X = WIDTH - (SB_WIDTH + 50)
 SB_Y = HEIGHT - (SB_HEIGHT + 450)
+
+# Next shape area parameters
+NS_WIDTH = 200
+NS_HEIGHT = 150
+NS_X = WIDTH - (NS_WIDTH + 50)
+NS_Y = HEIGHT - (NS_HEIGHT + 250)

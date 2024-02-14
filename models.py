@@ -17,8 +17,8 @@ class Node:
     def __init__(self, row, col, width, height):
         self.row = row
         self.col = col
-        self.x = row * width + 20
-        self.y = col * height + 20
+        self.x = row * width + 25
+        self.y = col * height + 25
         self.width = width
         self.height = height
         self.color = BLACK
