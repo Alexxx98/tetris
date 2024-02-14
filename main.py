@@ -19,6 +19,10 @@ from settings import (
     NS_HEIGHT,
     NS_X,
     NS_Y,
+    LVL_WIDTH,
+    LVL_HEIGHT,
+    LVL_X,
+    LVL_Y,
 )
 from models import Node, Shape
 from utils import (
@@ -29,7 +33,7 @@ from utils import (
     move,
 )
 
-from typing import List
+from typing import List, Tuple
 from queue import Queue
 
 
@@ -41,10 +45,11 @@ clock = pygame.time.Clock()
 
 # Create block falling event
 block_falling = pygame.USEREVENT + 0
-pygame.time.set_timer(block_falling, 300)
 
 
 def main():
+    fall_speed = 1000
+    pygame.time.set_timer(block_falling, fall_speed)
     running: bool = True
     nodes = get_game_grid()
     rows = get_rows(nodes)
@@ -53,6 +58,9 @@ def main():
     shapes: Queue = Queue(2)
     score: int = 0
     next_shape_nodes = get_next_shape_grid()
+    level: int = 1
+    next_level_threshold: int = 5
+    cleared_lines: int = 0
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -111,7 +119,18 @@ def main():
 
         if not moving:
             if current_shape:
-                score += check_lines(current_shape, rows, nodes)
+                new_score, cleared_lines = check_lines(
+                    current_shape, rows, nodes, cleared_lines
+                )
+                score += new_score * level
+
+            if cleared_lines >= next_level_threshold and level < 10:
+                next_level_threshold += 1
+                cleared_lines = 0
+                level += 1
+                fall_speed -= 100
+                pygame.time.set_timer(block_falling, fall_speed)
+
             shapes = create_shape(rows, nodes, shapes)
             current_shape = shapes.get()
             next_shape = shapes.queue[0]
@@ -124,6 +143,7 @@ def main():
         draw_game_grid(nodes)
         draw_score_board(score)
         draw_next_shape_area(next_shape_nodes, next_shape)
+        draw_level_area(level)
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -179,7 +199,7 @@ def draw_score_board(score):
     font = pygame.font.Font("UrbanBlockerSolid.ttf", 38)
     score_text = font.render("Score:", True, WHITE)
 
-    font = pygame.font.SysFont("arial", 38)
+    font = pygame.font.Font("Gemstone.ttf", 38)
     score_value = font.render(str(score), True, WHITE)
 
     text_position = (SB_X + SB_WIDTH // 3, SB_Y + SB_HEIGHT // 2 - 50)
@@ -217,14 +237,14 @@ def draw_next_shape_area(nodes: List[List[Node]], next_shape: Shape) -> None:
     # Draw shape
     shape = next_shape.get_current_shape()
     for node in shape:
-        x_diff = node.x - shape[0].x
-        y_diff = node.y - shape[0].y
+        x_diff = shape[0].x - node.x
+        y_diff = shape[0].y - node.y
 
         pygame.draw.rect(
             WINDOW,
             next_shape.color,
             pygame.Rect(
-                NS_X + NODE_WIDTH * 4 - x_diff,
+                NS_X + NODE_WIDTH * 3 - x_diff,
                 NS_Y + NODE_HEIGHT * 3 - y_diff,
                 node.width,
                 node.height,
@@ -235,7 +255,7 @@ def draw_next_shape_area(nodes: List[List[Node]], next_shape: Shape) -> None:
             WINDOW,
             BLACK,
             pygame.Rect(
-                NS_X + NODE_WIDTH * 4 - x_diff,
+                NS_X + NODE_WIDTH * 3 - x_diff,
                 NS_Y + NODE_HEIGHT * 3 - y_diff,
                 node.width,
                 node.height,
@@ -245,6 +265,16 @@ def draw_next_shape_area(nodes: List[List[Node]], next_shape: Shape) -> None:
 
     # Draw frame
     pygame.draw.rect(WINDOW, GREY, pygame.Rect(NS_X, NS_Y, NS_WIDTH, NS_HEIGHT), 5)
+
+
+def draw_level_area(level: int) -> None:
+    pygame.draw.rect(WINDOW, BLACK, pygame.Rect(LVL_X, LVL_Y, LVL_WIDTH, LVL_HEIGHT))
+    pygame.draw.rect(WINDOW, GREY, pygame.Rect(LVL_X, LVL_Y, LVL_WIDTH, LVL_HEIGHT), 5)
+
+    font = pygame.font.Font("Gemstone.ttf", 38)
+    level = font.render(str(level) + " x", True, WHITE)
+    position: Tuple[int, int] = (LVL_X + LVL_WIDTH // 3, LVL_Y + LVL_HEIGHT // 3)
+    WINDOW.blit(level, position)
 
 
 if __name__ == "__main__":
