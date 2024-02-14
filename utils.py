@@ -191,6 +191,8 @@ def create_shape(
             for node in shape.get_current_shape():
                 if node.is_frame():
                     valid = False
+                if node.is_block():
+                    quit()
 
             if valid:
                 shapes.put(shape)
@@ -201,8 +203,6 @@ def create_shape(
                 if block.is_frame():
                     raise IndexError
 
-                if node.is_block():
-                    quit()
         except IndexError:
             valid = True
             row_index += 1
